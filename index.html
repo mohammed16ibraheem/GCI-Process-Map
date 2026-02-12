@@ -1,0 +1,975 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GCI Process Map - Interactive Visual Diagram</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            overflow-x: auto;
+            min-height: 100vh;
+        }
+        
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        
+        .header h1 {
+            margin: 0;
+            font-size: 32px;
+            font-weight: bold;
+            color: #2c3e50;
+            text-align: center;
+        }
+        
+        
+        .diagram-container {
+            background: white;
+            padding: 40px;
+            margin: 30px auto;
+            max-width: 1600px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            border-radius: 10px;
+        }
+        
+        .page-title {
+            text-align: center;
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 40px;
+            color: #2c3e50;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .swimlane {
+            margin-bottom: 50px;
+            border: 3px solid #34495e;
+            border-radius: 10px;
+            padding: 25px;
+            background: #fafafa;
+            transition: all 0.3s ease;
+        }
+        
+        .swimlane:hover {
+            box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+        }
+        
+        .swimlane-title {
+            font-size: 22px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #2c3e50;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 10px;
+        }
+        
+        /* Process Box Styles */
+        .process-box {
+            fill: white;
+            stroke: #34495e;
+            stroke-width: 3px;
+            rx: 8;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .process-box:hover {
+            fill: #ecf0f1;
+            stroke-width: 4px;
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.2));
+        }
+        
+        .process-box-orange {
+            fill: #ffa500;
+            stroke: #34495e;
+            stroke-width: 3px;
+        }
+        
+        .process-box-orange:hover {
+            fill: #ffb733;
+        }
+        
+        .process-box-green {
+            fill: #90ee90;
+            stroke: #34495e;
+            stroke-width: 3px;
+        }
+        
+        .process-box-green:hover {
+            fill: #a8f5a8;
+        }
+        
+        .process-box-red {
+            fill: #ffcccc;
+            stroke: #ff0000;
+            stroke-width: 4px;
+        }
+        
+        .process-box-blue {
+            fill: #add8e6;
+            stroke: #0000ff;
+            stroke-width: 3px;
+        }
+        
+        .process-box-grey {
+            fill: #d3d3d3;
+            stroke: #34495e;
+            stroke-width: 3px;
+        }
+        
+        /* Text Styles - Larger and More Readable */
+        .text-label {
+            font-size: 16px;
+            font-weight: bold;
+            text-anchor: middle;
+            dominant-baseline: middle;
+            fill: #2c3e50;
+        }
+        
+        .text-label-small {
+            font-size: 14px;
+            text-anchor: middle;
+            dominant-baseline: middle;
+            fill: #34495e;
+        }
+        
+        .text-label-tiny {
+            font-size: 12px;
+            text-anchor: middle;
+            dominant-baseline: middle;
+            fill: #34495e;
+        }
+        
+        /* Arrow Styles with Animation */
+        .arrow {
+            stroke: #0066cc;
+            stroke-width: 3;
+            fill: none;
+            marker-end: url(#arrowhead);
+            opacity: 0.7;
+            transition: all 0.3s ease;
+        }
+        
+        .arrow:hover {
+            stroke-width: 4;
+            opacity: 1;
+        }
+        
+        .arrow-animated {
+            stroke: #27ae60;
+            stroke-width: 4;
+            fill: none;
+            marker-end: url(#arrowhead);
+            stroke-dasharray: 10,5;
+            animation: dash 2s linear infinite;
+        }
+        
+        @keyframes dash {
+            to {
+                stroke-dashoffset: -100;
+            }
+        }
+        
+        .document-shape {
+            fill: #87ceeb;
+            stroke: #0066cc;
+            stroke-width: 3;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .document-shape:hover {
+            fill: #5dade2;
+            stroke-width: 4;
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.2));
+        }
+        
+        .circle-ref {
+            fill: #fff;
+            stroke: #34495e;
+            stroke-width: 3;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .circle-ref:hover {
+            fill: #ecf0f1;
+            stroke-width: 4;
+        }
+        
+        .dashed-box {
+            fill: none;
+            stroke: #ff0000;
+            stroke-width: 3;
+            stroke-dasharray: 8,4;
+        }
+        
+        .finished-good {
+            fill: #0066cc;
+            stroke: #003366;
+            stroke-width: 3;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .finished-good:hover {
+            fill: #0080ff;
+            stroke-width: 4;
+            filter: drop-shadow(0 4px 8px rgba(0,102,204,0.4));
+        }
+        
+        /* SVG Container */
+        svg {
+            border: 2px solid #bdc3c7;
+            border-radius: 8px;
+            background: white;
+            margin: 20px 0;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        /* Highlight Effect */
+        .highlight {
+            animation: pulse 2s ease-in-out infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.6;
+            }
+        }
+        
+        /* Tooltip */
+        .tooltip {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 5px;
+            font-size: 14px;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s;
+            z-index: 10000;
+            max-width: 300px;
+        }
+        
+        .tooltip.show {
+            opacity: 1;
+        }
+        
+        /* Page Navigation */
+        .page-nav {
+            text-align: center;
+            margin: 30px 0;
+        }
+        
+        .page-nav button {
+            margin: 0 10px;
+        }
+        
+        /* Legend */
+        .legend {
+            background: #ecf0f1;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .legend-color {
+            width: 30px;
+            height: 30px;
+            border: 2px solid #34495e;
+            border-radius: 5px;
+        }
+        
+        .legend-text {
+            font-size: 16px;
+            color: #2c3e50;
+        }
+        
+        /* Odoo Badge Styles */
+        .odoo-badge {
+            fill: #875a7b;
+            stroke: #ffffff;
+            stroke-width: 2;
+            rx: 5;
+        }
+        
+        .odoo-text {
+            font-size: 14px;
+            font-weight: bold;
+            fill: #ffffff;
+            text-anchor: middle;
+            dominant-baseline: middle;
+        }
+        
+        .odoo-label {
+            font-size: 12px;
+            font-weight: bold;
+            fill: #875a7b;
+            text-anchor: middle;
+            dominant-baseline: middle;
+        }
+        
+        .odoo-note {
+            background: #f8f9fa;
+            border-left: 4px solid #875a7b;
+            padding: 15px 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+            font-size: 16px;
+            color: #2c3e50;
+        }
+        
+        .odoo-note strong {
+            color: #875a7b;
+            font-weight: bold;
+        }
+        
+        .odoo-section-header {
+            background: linear-gradient(135deg, #875a7b 0%, #a67fa8 100%);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            margin: 15px 0;
+            font-size: 18px;
+            font-weight: bold;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🏭 GCI Process Map - Interactive Visual Diagram</h1>
+        <div class="odoo-note">
+            <strong>📌 ODOO IMPLEMENTATION:</strong> This process flow is implemented in <strong>Odoo ERP</strong> with three Operation Types: 
+            <strong>MCR (Material Collection & Receiving)</strong> - Receipt Type, Sequence Prefix: <strong>MCR</strong>, 
+            <strong>BSP (Baling & Sorting Process)</strong> - Internal Transfer Type, Sequence Prefix: <strong>BSP</strong>, Reservation Method: <strong>At Confirmation</strong>, 
+            <strong>FGD (Finished Goods Delivery)</strong> - Delivery Type, Sequence Prefix: <strong>FGD</strong>, Reservation Method: <strong>At Confirmation</strong>. 
+            Product Category: <strong>Recyclable Materials</strong> (Costing Method: Standard Price). 
+            Compare with the PPTX file to see the complete workflow mapping.
+        </div>
+    </div>
+    
+    <div class="diagram-container">
+        <!-- Legend -->
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-color" style="background: #ffa500;"></div>
+                <span class="legend-text">OCC Materials</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #90ee90;"></div>
+                <span class="legend-text">Printing Press Materials</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #ffcccc; border-color: #ff0000;"></div>
+                <span class="legend-text">Residue/Disposal</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #0066cc;"></div>
+                <span class="legend-text">Finished Goods</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #87ceeb;"></div>
+                <span class="legend-text">Documents</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #875a7b;"></div>
+                <span class="legend-text"><strong>ODOO Operation Types</strong> (MCR, BSP, FGD)</span>
+            </div>
+        </div>
+        
+        <!-- PAGE 1: SUPPLY CHAIN -->
+        <div class="page-title">📦 Process Map - Supply Chain</div>
+        <div class="odoo-section-header">🔄 This section maps to Odoo: Material Collection & Receiving (MCR) - Receipt Type | Sequence Prefix: MCR | Company: NAMMA AL ENJAZ FACTORY FOR INDUSTRY COMPANY</div>
+        
+        <svg width="1400" height="900" viewBox="0 0 1400 900" id="svg1">
+            <defs>
+                <marker id="arrowhead" markerWidth="12" markerHeight="12" refX="10" refY="4" orient="auto">
+                    <polygon points="0 0, 12 4, 0 8" fill="#0066cc" />
+                </marker>
+                <marker id="arrowhead-animated" markerWidth="12" markerHeight="12" refX="10" refY="4" orient="auto">
+                    <polygon points="0 0, 12 4, 0 8" fill="#27ae60" />
+                </marker>
+            </defs>
+            
+            <!-- PHASE 1: Material Type & Source -->
+            <g id="phase1">
+                <rect x="30" y="30" width="1340" height="200" fill="#f0f8ff" stroke="#34495e" stroke-width="3" rx="8"/>
+                <text x="700" y="60" text-anchor="middle" font-size="20" font-weight="bold" fill="#2c3e50">Supply Chain (Recyclables Type &amp; Source)</text>
+                
+                <!-- Material Types Group 1 -->
+                <rect x="60" y="80" width="220" height="130" fill="#fff" stroke="#34495e" stroke-width="3" rx="8" class="process-box"/>
+                <text x="170" y="105" text-anchor="middle" font-size="18" font-weight="bold" fill="#2c3e50">Material Type</text>
+                <text x="170" y="130" text-anchor="middle" font-size="16" fill="#34495e">DUPLEX</text>
+                <text x="170" y="150" text-anchor="middle" font-size="16" fill="#34495e">POLY CUP</text>
+                <text x="170" y="170" text-anchor="middle" font-size="16" fill="#34495e">NCC</text>
+                <text x="170" y="190" text-anchor="middle" font-size="16" fill="#34495e">OCC</text>
+                <text x="170" y="210" text-anchor="middle" font-size="16" fill="#34495e">SACK, KRAFT, OINP</text>
+                
+                <!-- Material Types Group 2 -->
+                <rect x="300" y="80" width="220" height="130" fill="#fff" stroke="#34495e" stroke-width="3" rx="8" class="process-box"/>
+                <text x="410" y="105" text-anchor="middle" font-size="18" font-weight="bold" fill="#2c3e50">Material Type</text>
+                <text x="410" y="130" text-anchor="middle" font-size="16" fill="#34495e">PULP</text>
+                <text x="410" y="150" text-anchor="middle" font-size="16" fill="#34495e">MIX WASTE</text>
+                <text x="410" y="170" text-anchor="middle" font-size="16" fill="#34495e">BOOKS</text>
+                <text x="410" y="190" text-anchor="middle" font-size="16" fill="#34495e">TISSUE</text>
+                <text x="410" y="210" text-anchor="middle" font-size="16" fill="#34495e">OCC CORE, OTHERS</text>
+                
+                <!-- Arrows to Material Source -->
+                <line x1="280" y1="145" x2="560" y2="145" class="arrow" id="arrow-mat1"/>
+                <line x1="520" y1="145" x2="560" y2="145" class="arrow" id="arrow-mat2"/>
+                
+                <!-- Material Source -->
+                <rect x="560" y="80" width="320" height="130" fill="#fff" stroke="#34495e" stroke-width="3" rx="8" class="process-box"/>
+                <text x="720" y="105" text-anchor="middle" font-size="18" font-weight="bold" fill="#2c3e50">Material Source</text>
+                <text x="720" y="135" text-anchor="middle" font-size="16" fill="#34495e">• Contracts</text>
+                <text x="720" y="160" text-anchor="middle" font-size="16" fill="#34495e">• Walking</text>
+                <text x="720" y="185" text-anchor="middle" font-size="16" fill="#34495e">• Self collection</text>
+                <text x="720" y="210" text-anchor="middle" font-size="16" fill="#34495e">• Waste Collection Companies</text>
+                
+                <!-- Arrow to GCI -->
+                <line x1="880" y1="145" x2="1000" y2="145" class="arrow" id="arrow-gci1"/>
+                
+                <!-- GCI -->
+                <rect x="1000" y="100" width="140" height="90" fill="#fff" stroke="#34495e" stroke-width="3" rx="8" class="process-box"/>
+                <text x="1070" y="145" text-anchor="middle" font-size="22" font-weight="bold" fill="#2c3e50">GCI</text>
+                
+                <!-- Arrow down to Phase 2 -->
+                <line x1="1070" y1="200" x2="1070" y2="260" class="arrow" id="arrow-phase1-2"/>
+            </g>
+            
+            <!-- PHASE 2: Purchase & Collection -->
+            <g id="phase2">
+                <rect x="30" y="260" width="1340" height="280" fill="#fffacd" stroke="#34495e" stroke-width="3" rx="8"/>
+                <text x="700" y="290" text-anchor="middle" font-size="20" font-weight="bold" fill="#2c3e50">Supply Chain (Purchase &amp; Collection)</text>
+                
+                <!-- GCI -->
+                <rect x="1000" y="310" width="140" height="70" fill="#fff" stroke="#34495e" stroke-width="3" rx="8" class="process-box"/>
+                <text x="1070" y="345" text-anchor="middle" font-size="22" font-weight="bold" fill="#2c3e50">GCI</text>
+                
+                <!-- Arrow to Operations Team -->
+                <line x1="1000" y1="345" x2="750" y2="345" class="arrow" id="arrow-ops"/>
+                
+                <!-- Operations & Commercial Team -->
+                <rect x="60" y="310" width="670" height="90" fill="#fff" stroke="#34495e" stroke-width="3" rx="8" class="process-box"/>
+                <text x="395" y="340" text-anchor="middle" font-size="18" font-weight="bold" fill="#2c3e50">Operations &amp; Commercial Team evaluate:</text>
+                <text x="100" y="370" text-anchor="start" font-size="16" fill="#34495e">• Location, Quantity, Materials types</text>
+                <text x="100" y="390" text-anchor="start" font-size="16" fill="#34495e">• Quality, Material sources</text>
+                <text x="100" y="410" text-anchor="start" font-size="16" fill="#34495e">• Collection Methodology (Logistic plan)</text>
+                <text x="450" y="370" text-anchor="start" font-size="16" fill="#34495e">• Purchasing cost of each materials</text>
+                <text x="450" y="390" text-anchor="start" font-size="16" fill="#34495e">• Required monthly fund</text>
+                
+                <!-- Arrow to Finance -->
+                <line x1="395" y1="400" x2="395" y2="440" class="arrow" id="arrow-fin"/>
+                <text x="410" y="420" font-size="14" fill="#0066cc" font-weight="bold">Purchasing &amp; Collection plan</text>
+                
+                <!-- Finance Department -->
+                <rect x="270" y="440" width="250" height="70" fill="#ffa500" stroke="#34495e" stroke-width="3" rx="8" class="process-box-orange"/>
+                <text x="395" y="475" text-anchor="middle" font-size="18" font-weight="bold" fill="#2c3e50">(Finance Dept.)</text>
+                
+                <!-- Arrow to Bank Deposit -->
+                <line x1="395" y1="510" x2="395" y2="540" class="arrow" id="arrow-bank"/>
+                <text x="410" y="525" font-size="14" fill="#0066cc" font-weight="bold">Bank Transfer</text>
+                
+                <!-- Bank Deposit -->
+                <rect x="60" y="540" width="670" height="70" fill="#fff" stroke="#34495e" stroke-width="3" rx="8" class="process-box"/>
+                <text x="395" y="575" text-anchor="middle" font-size="18" font-weight="bold" fill="#2c3e50">Deposit required fund into GCI Bank account</text>
+                
+                <!-- Arrow down to Phase 3 -->
+                <line x1="395" y1="610" x2="395" y2="640" class="arrow" id="arrow-phase2-3"/>
+                <line x1="1070" y1="380" x2="1070" y2="640" class="arrow" id="arrow-gci2"/>
+            </g>
+            
+            <!-- PHASE 3: Material Collection & Receiving -->
+            <g id="phase3">
+                <rect x="30" y="640" width="1340" height="200" fill="#e6ffe6" stroke="#34495e" stroke-width="3" rx="8"/>
+                <text x="700" y="670" text-anchor="middle" font-size="20" font-weight="bold" fill="#2c3e50">Material Collection &amp; Receiving</text>
+                
+                <!-- GCI Start Collection -->
+                <rect x="60" y="690" width="330" height="70" fill="#fff" stroke="#34495e" stroke-width="3" rx="8" class="process-box"/>
+                <text x="225" y="720" text-anchor="middle" font-size="18" font-weight="bold" fill="#2c3e50">GCI start Material collection</text>
+                <text x="225" y="745" text-anchor="middle" font-size="18" font-weight="bold" fill="#2c3e50">and receiving</text>
+                
+                <!-- Odoo MCR Badge -->
+                <rect x="70" y="700" width="100" height="35" class="odoo-badge"/>
+                <text x="120" y="715" class="odoo-text" font-size="12">ODOO: MCR</text>
+                <text x="120" y="730" class="odoo-text" font-size="10">Seq: MCR</text>
+                <text x="120" y="745" class="odoo-label" font-size="10">Receipt Type</text>
+                
+                <!-- Arrow -->
+                <line x1="390" y1="725" x2="450" y2="725" class="arrow" id="arrow-rec1"/>
+                
+                <!-- Receive Recyclables -->
+                <rect x="450" y="690" width="300" height="70" fill="#fff" stroke="#34495e" stroke-width="3" rx="8" class="process-box"/>
+                <text x="600" y="720" text-anchor="middle" font-size="16" fill="#34495e">Receive recyclables from different</text>
+                <text x="600" y="745" text-anchor="middle" font-size="16" fill="#34495e">sources at GCI sites</text>
+                
+                <!-- Arrow -->
+                <line x1="750" y1="725" x2="810" y2="725" class="arrow" id="arrow-rec2"/>
+                
+                <!-- Weigh Material -->
+                <rect x="810" y="690" width="260" height="70" fill="#fff" stroke="#34495e" stroke-width="3" rx="8" class="process-box"/>
+                <text x="940" y="710" text-anchor="middle" font-size="16" fill="#34495e">Weigh the Material at</text>
+                <text x="940" y="735" text-anchor="middle" font-size="16" fill="#34495e">Weighbridge (GCI sites)</text>
+                
+                <!-- Weighbridge Ticket -->
+                <path d="M 1080 700 L 1110 690 L 1110 750 L 1080 760 Z" class="document-shape"/>
+                <text x="1095" y="720" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Weighbridge</text>
+                <text x="1095" y="740" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Ticket</text>
+                
+                <!-- Arrow -->
+                <line x1="1070" y1="725" x2="1080" y2="725" class="arrow" id="arrow-ticket"/>
+                <line x1="1110" y1="725" x2="1170" y2="725" class="arrow" id="arrow-inspect"/>
+                
+                <!-- Material Inspection -->
+                <rect x="1170" y="660" width="180" height="110" fill="#fff" stroke="#34495e" stroke-width="3" rx="8" class="process-box"/>
+                <text x="1260" y="690" text-anchor="middle" font-size="16" font-weight="bold" fill="#2c3e50">Receive material in</text>
+                <text x="1260" y="715" text-anchor="middle" font-size="16" font-weight="bold" fill="#2c3e50">designated receiving area</text>
+                <text x="1260" y="740" text-anchor="middle" font-size="14" fill="#34495e">Trained Labor visually</text>
+                <text x="1260" y="760" text-anchor="middle" font-size="14" fill="#34495e">inspects and assigns</text>
+                <text x="1260" y="780" text-anchor="middle" font-size="14" fill="#34495e">percentage for each material</text>
+                
+                <!-- Page Reference -->
+                <circle cx="1350" cy="725" r="30" class="circle-ref"/>
+                <text x="1350" y="730" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Pg 2,3</text>
+                <line x1="1350" y1="725" x2="1320" y2="725" class="arrow" id="arrow-page2"/>
+            </g>
+        </svg>
+        
+        <!-- PAGE 2 & 3: BALING & SORTING -->
+        <div class="page-title" style="margin-top: 60px;">⚙️ Process Map – Baling &amp; Sorting Process (QA, QC)</div>
+        <div class="odoo-section-header">🔄 This section maps to Odoo: Baling &amp; Sorting Process (BSP) - Internal Transfer Type | Sequence Prefix: BSP | Reservation Method: At Confirmation</div>
+        
+        <svg width="1400" height="1100" viewBox="0 0 1400 1100" id="svg2" style="margin-top: 20px;">
+            <defs>
+                <marker id="arrowhead2" markerWidth="12" markerHeight="12" refX="10" refY="4" orient="auto">
+                    <polygon points="0 0, 12 4, 0 8" fill="#0066cc" />
+                </marker>
+            </defs>
+            
+            <!-- BALING PROCESS -->
+            <g id="baling">
+                <rect x="30" y="30" width="1340" height="230" fill="#fffacd" stroke="#34495e" stroke-width="3" rx="8"/>
+                <text x="700" y="60" text-anchor="middle" font-size="20" font-weight="bold" fill="#2c3e50">Baling Process</text>
+                
+                <!-- Odoo BSP Badge -->
+                <rect x="50" y="80" width="110" height="40" class="odoo-badge"/>
+                <text x="105" y="98" class="odoo-text" font-size="12">ODOO: BSP</text>
+                <text x="105" y="113" class="odoo-text" font-size="10">Seq: BSP</text>
+                <text x="105" y="128" class="odoo-label" font-size="10">Internal Transfer</text>
+                <text x="105" y="143" class="odoo-label" font-size="9">Reservation: At Confirmation</text>
+                
+                <!-- Page Reference -->
+                <circle cx="70" cy="180" r="25" class="circle-ref"/>
+                <text x="70" y="185" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Pg 2</text>
+                
+                <!-- Feeding -->
+                <line x1="105" y1="180" x2="230" y2="180" class="arrow" id="arrow-feed"/>
+                <rect x="230" y="130" width="250" height="100" fill="#fff" stroke="#34495e" stroke-width="3" rx="8" class="process-box"/>
+                <text x="355" y="170" text-anchor="middle" font-size="16" fill="#34495e">Feeding materials to feeding</text>
+                <text x="355" y="195" text-anchor="middle" font-size="16" fill="#34495e">conveyor/quality control conveyor</text>
+                
+                <!-- Arrow -->
+                <line x1="480" y1="180" x2="540" y2="180" class="arrow" id="arrow-baler1"/>
+                
+                <!-- Baler Machine -->
+                <rect x="540" y="130" width="220" height="100" fill="#fff" stroke="#34495e" stroke-width="3" rx="8" class="process-box"/>
+                <text x="650" y="170" text-anchor="middle" font-size="18" font-weight="bold" fill="#2c3e50">Material received at</text>
+                <text x="650" y="205" text-anchor="middle" font-size="18" font-weight="bold" fill="#2c3e50">the Baler machine</text>
+                
+                <!-- Arrow -->
+                <line x1="760" y1="180" x2="820" y2="180" class="arrow" id="arrow-baler2"/>
+                
+                <!-- Finished Good -->
+                <rect x="820" y="130" width="220" height="100" fill="#fff" stroke="#34495e" stroke-width="3" rx="8" class="process-box"/>
+                <text x="930" y="170" text-anchor="middle" font-size="18" font-weight="bold" fill="#27ae60">Finished Good</text>
+                <text x="930" y="195" text-anchor="middle" font-size="18" font-weight="bold" fill="#27ae60">ready for selling</text>
+                
+                <!-- Odoo FGD Badge -->
+                <rect x="850" y="140" width="110" height="40" class="odoo-badge"/>
+                <text x="905" y="158" class="odoo-text" font-size="12">ODOO: FGD</text>
+                <text x="905" y="173" class="odoo-text" font-size="10">Seq: FGD</text>
+                <text x="905" y="188" class="odoo-label" font-size="10">Delivery Type</text>
+                <text x="905" y="203" class="odoo-label" font-size="9">Reservation: At Confirmation</text>
+                
+                <!-- Labeling Box -->
+                <rect x="1080" y="70" width="270" height="180" fill="#fff" stroke="#34495e" stroke-width="3" rx="8" class="process-box"/>
+                <text x="1215" y="100" text-anchor="middle" font-size="18" font-weight="bold" fill="#2c3e50">Labeling each bale as:</text>
+                <text x="1100" y="130" text-anchor="start" font-size="16" fill="#34495e">✓ Baler operator name</text>
+                <text x="1100" y="155" text-anchor="start" font-size="16" fill="#34495e">✓ Supervisor/Foreman Name</text>
+                <text x="1100" y="180" text-anchor="start" font-size="16" fill="#34495e">✓ Bale weight</text>
+                <text x="1100" y="205" text-anchor="start" font-size="16" fill="#34495e">✓ Date &amp; Time</text>
+                <text x="1100" y="230" text-anchor="start" font-size="16" fill="#34495e">✓ Shift number</text>
+            </g>
+            
+            <!-- SORTING PROCESS -->
+            <g id="sorting">
+                <rect x="30" y="280" width="1340" height="800" fill="#e6ffe6" stroke="#34495e" stroke-width="3" rx="8"/>
+                <text x="700" y="310" text-anchor="middle" font-size="20" font-weight="bold" fill="#2c3e50">Sorting</text>
+                
+                <!-- OCC Material Section -->
+                <rect x="60" y="340" width="620" height="380" fill="#fff" stroke="#34495e" stroke-width="3" rx="8"/>
+                <text x="370" y="370" text-anchor="middle" font-size="18" font-weight="bold" fill="#2c3e50">OCC Material</text>
+                
+                <!-- OCC Material Input -->
+                <rect x="80" y="390" width="160" height="70" fill="#ffa500" stroke="#34495e" stroke-width="3" rx="8" class="process-box-orange"/>
+                <text x="160" y="410" text-anchor="middle" font-size="18" font-weight="bold" fill="#2c3e50">OCC material</text>
+                <text x="160" y="430" text-anchor="middle" font-size="11" fill="#2c3e50" font-style="italic">(OCC - Old Corrugated</text>
+                <text x="160" y="445" text-anchor="middle" font-size="11" fill="#2c3e50" font-style="italic">Cardboard)</text>
+                
+                <!-- Clean OCC Path -->
+                <line x1="240" y1="425" x2="290" y2="425" class="arrow" id="arrow-occ-clean"/>
+                <rect x="290" y="390" width="140" height="70" fill="#fff" stroke="#34495e" stroke-width="3" rx="8" class="process-box"/>
+                <text x="360" y="425" text-anchor="middle" font-size="18" font-weight="bold" fill="#2c3e50">OCC</text>
+                
+                <!-- OCC Categories -->
+                <rect x="290" y="480" width="320" height="220" fill="#ffa500" stroke="#ff0000" stroke-width="3" stroke-dasharray="8,4" rx="8"/>
+                <text x="450" y="510" text-anchor="middle" font-size="18" font-weight="bold" fill="#2c3e50">OCC Categories</text>
+                <rect x="310" y="540" width="120" height="40" fill="#ffa500" stroke="#34495e" stroke-width="2" rx="5"/>
+                <text x="370" y="562" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">OCC G2 (L)</text>
+                <rect x="450" y="540" width="120" height="40" fill="#ffa500" stroke="#34495e" stroke-width="2" rx="5"/>
+                <text x="510" y="562" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">OCC 11 (H)</text>
+                <rect x="310" y="600" width="120" height="40" fill="#ffa500" stroke="#34495e" stroke-width="2" rx="5"/>
+                <text x="370" y="622" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">NCC</text>
+                <rect x="450" y="600" width="120" height="40" fill="#ffa500" stroke="#34495e" stroke-width="2" rx="5"/>
+                <text x="510" y="622" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Core Pipe</text>
+                <rect x="380" y="660" width="120" height="40" fill="#ffa500" stroke="#34495e" stroke-width="2" rx="5"/>
+                <text x="440" y="682" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Sack Raft</text>
+                
+                <!-- Arrows to FG -->
+                <line x1="450" y1="700" x2="450" y2="750" class="arrow" id="arrow-occ-fg"/>
+                <circle cx="450" cy="780" r="35" class="finished-good"/>
+                <text x="450" y="785" text-anchor="middle" font-size="18" font-weight="bold" fill="white">FG</text>
+                <!-- Odoo FGD Badge -->
+                <rect x="420" y="790" width="60" height="25" class="odoo-badge"/>
+                <text x="450" y="803" class="odoo-text" font-size="10">FGD</text>
+                <text x="450" y="815" class="odoo-text" font-size="8">Seq: FGD</text>
+                
+                <!-- Contaminated OCC Path -->
+                <line x1="240" y1="480" x2="290" y2="480" class="arrow" id="arrow-occ-cont"/>
+                <rect x="290" y="460" width="140" height="50" fill="#fff" stroke="#34495e" stroke-width="3" rx="8" class="process-box"/>
+                <text x="360" y="485" text-anchor="middle" font-size="16" fill="#34495e">Contaminated</text>
+                <text x="360" y="505" text-anchor="middle" font-size="16" fill="#34495e">material</text>
+                
+                <!-- Recyclable Material -->
+                <line x1="290" y1="485" x2="220" y2="485" class="arrow" id="arrow-recycle1"/>
+                <rect x="80" y="460" width="140" height="50" fill="#fff" stroke="#34495e" stroke-width="3" rx="8" class="process-box"/>
+                <text x="150" y="485" text-anchor="middle" font-size="16" fill="#34495e">Recyclable</text>
+                <text x="150" y="505" text-anchor="middle" font-size="16" fill="#34495e">Material</text>
+                
+                <!-- Plastic and Paper -->
+                <line x1="80" y1="485" x2="80" y2="570" class="arrow" id="arrow-plastic"/>
+                <rect x="50" y="570" width="100" height="40" fill="#ffa500" stroke="#34495e" stroke-width="2" rx="5"/>
+                <text x="100" y="592" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Plastic</text>
+                <line x1="150" y1="485" x2="150" y2="570" class="arrow" id="arrow-paper"/>
+                <rect x="120" y="570" width="100" height="40" fill="#ffa500" stroke="#34495e" stroke-width="2" rx="5"/>
+                <text x="170" y="592" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Paper</text>
+                
+                <!-- Arrows to FG -->
+                <line x1="100" y1="610" x2="100" y2="750" class="arrow" id="arrow-plastic-fg"/>
+                <line x1="170" y1="610" x2="170" y2="750" class="arrow" id="arrow-paper-fg"/>
+                <circle cx="135" cy="780" r="35" class="finished-good"/>
+                <text x="135" y="785" text-anchor="middle" font-size="18" font-weight="bold" fill="white">FG</text>
+                <!-- Odoo FGD Badge -->
+                <rect x="105" y="790" width="60" height="25" class="odoo-badge"/>
+                <text x="135" y="803" class="odoo-text" font-size="10">FGD</text>
+                <text x="135" y="815" class="odoo-text" font-size="8">Seq: FGD</text>
+                
+                <!-- Residue Path -->
+                <line x1="290" y1="520" x2="220" y2="620" class="arrow" id="arrow-residue1"/>
+                <rect x="80" y="600" width="140" height="50" fill="#fff" stroke="#ff0000" stroke-width="4" rx="8" class="process-box-red"/>
+                <text x="150" y="625" text-anchor="middle" font-size="16" font-weight="bold" fill="#ff0000">Residue</text>
+                <line x1="80" y1="650" x2="80" y2="700" class="arrow" id="arrow-residue2"/>
+                <rect x="50" y="700" width="140" height="60" fill="#fff" stroke="#ff0000" stroke-width="4" rx="8" class="process-box-red"/>
+                <text x="120" y="730" text-anchor="middle" font-size="14" font-weight="bold" fill="#ff0000">Weigh the Material</text>
+                <text x="120" y="750" text-anchor="middle" font-size="14" font-weight="bold" fill="#ff0000">and dispose to Landfill</text>
+                
+                <!-- Printing Press Material Section -->
+                <rect x="720" y="340" width="620" height="380" fill="#fff" stroke="#34495e" stroke-width="3" rx="8"/>
+                <text x="1030" y="370" text-anchor="middle" font-size="18" font-weight="bold" fill="#2c3e50">Printing Press Material</text>
+                
+                <!-- Printing Press Material Input -->
+                <rect x="740" y="390" width="160" height="70" fill="#d3d3d3" stroke="#34495e" stroke-width="3" rx="8" class="process-box-grey"/>
+                <text x="820" y="425" text-anchor="middle" font-size="18" font-weight="bold" fill="#2c3e50">Printing Press</text>
+                <text x="820" y="450" text-anchor="middle" font-size="18" font-weight="bold" fill="#2c3e50">material</text>
+                
+                <!-- Clean Printing Press Path -->
+                <line x1="900" y1="425" x2="950" y2="425" class="arrow" id="arrow-pp-clean"/>
+                <rect x="950" y="390" width="140" height="70" fill="#fff" stroke="#34495e" stroke-width="3" rx="8" class="process-box"/>
+                <text x="1020" y="425" text-anchor="middle" font-size="18" font-weight="bold" fill="#2c3e50">Printing</text>
+                <text x="1020" y="450" text-anchor="middle" font-size="18" font-weight="bold" fill="#2c3e50">Press</text>
+                
+                <!-- Printing Press Categories -->
+                <rect x="950" y="480" width="320" height="220" fill="#90ee90" stroke="#ff0000" stroke-width="3" stroke-dasharray="8,4" rx="8"/>
+                <text x="1110" y="510" text-anchor="middle" font-size="18" font-weight="bold" fill="#2c3e50">Printing Press Categories</text>
+                <rect x="970" y="540" width="90" height="35" fill="#90ee90" stroke="#34495e" stroke-width="2" rx="5"/>
+                <text x="1015" y="560" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">POC</text>
+                <rect x="1080" y="540" width="90" height="35" fill="#90ee90" stroke="#34495e" stroke-width="2" rx="5"/>
+                <text x="1125" y="560" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">BBC White</text>
+                <rect x="1190" y="540" width="90" height="35" fill="#90ee90" stroke="#34495e" stroke-width="2" rx="5"/>
+                <text x="1235" y="560" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">E Flute</text>
+                <rect x="970" y="590" width="90" height="35" fill="#90ee90" stroke="#34495e" stroke-width="2" rx="5"/>
+                <text x="1015" y="610" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">BBC Gray</text>
+                <rect x="1080" y="590" width="90" height="35" fill="#90ee90" stroke="#34495e" stroke-width="2" rx="5"/>
+                <text x="1125" y="610" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">ONIP Loose</text>
+                <rect x="1190" y="590" width="90" height="35" fill="#90ee90" stroke="#34495e" stroke-width="2" rx="5"/>
+                <text x="1235" y="610" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">End reels</text>
+                <rect x="970" y="640" width="90" height="35" fill="#90ee90" stroke="#34495e" stroke-width="2" rx="5"/>
+                <text x="1015" y="660" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">BBC Plastic</text>
+                <rect x="1080" y="640" width="90" height="35" fill="#90ee90" stroke="#34495e" stroke-width="2" rx="5"/>
+                <text x="1125" y="660" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">Magazine</text>
+                <rect x="1190" y="640" width="90" height="35" fill="#90ee90" stroke="#34495e" stroke-width="2" rx="5"/>
+                <text x="1235" y="660" text-anchor="middle" font-size="12" font-weight="bold" fill="#2c3e50">Box Files</text>
+                
+                <!-- Arrows to FG -->
+                <line x1="1110" y1="700" x2="1110" y2="750" class="arrow" id="arrow-pp-fg"/>
+                <circle cx="1110" cy="780" r="35" class="finished-good"/>
+                <text x="1110" y="785" text-anchor="middle" font-size="18" font-weight="bold" fill="white">FG</text>
+                <!-- Odoo FGD Badge -->
+                <rect x="1080" y="790" width="60" height="25" class="odoo-badge"/>
+                <text x="1110" y="803" class="odoo-text" font-size="10">FGD</text>
+                <text x="1110" y="815" class="odoo-text" font-size="8">Seq: FGD</text>
+                
+                <!-- Contaminated Printing Press Path -->
+                <line x1="900" y1="480" x2="950" y2="480" class="arrow" id="arrow-pp-cont"/>
+                <rect x="950" y="460" width="140" height="50" fill="#fff" stroke="#34495e" stroke-width="3" rx="8" class="process-box"/>
+                <text x="1020" y="485" text-anchor="middle" font-size="16" fill="#34495e">Contaminated</text>
+                <text x="1020" y="505" text-anchor="middle" font-size="16" fill="#34495e">material</text>
+                
+                <!-- Recyclable Material -->
+                <line x1="950" y1="485" x2="880" y2="485" class="arrow" id="arrow-recycle2"/>
+                <rect x="740" y="460" width="140" height="50" fill="#fff" stroke="#34495e" stroke-width="3" rx="8" class="process-box"/>
+                <text x="810" y="485" text-anchor="middle" font-size="16" fill="#34495e">Recyclable</text>
+                <text x="810" y="505" text-anchor="middle" font-size="16" fill="#34495e">Material</text>
+                
+                <!-- Plastic and OCC -->
+                <line x1="740" y1="485" x2="740" y2="570" class="arrow" id="arrow-plastic2"/>
+                <rect x="710" y="570" width="100" height="40" fill="#90ee90" stroke="#34495e" stroke-width="2" rx="5"/>
+                <text x="760" y="592" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Plastic</text>
+                <line x1="840" y1="485" x2="840" y2="570" class="arrow" id="arrow-occ2"/>
+                <rect x="810" y="570" width="100" height="40" fill="#90ee90" stroke="#34495e" stroke-width="2" rx="5"/>
+                <text x="860" y="592" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">OCC</text>
+                
+                <!-- Arrows to FG -->
+                <line x1="760" y1="610" x2="760" y2="750" class="arrow" id="arrow-plastic2-fg"/>
+                <line x1="860" y1="610" x2="860" y2="750" class="arrow" id="arrow-occ2-fg"/>
+                <circle cx="810" cy="780" r="35" class="finished-good"/>
+                <text x="810" y="785" text-anchor="middle" font-size="18" font-weight="bold" fill="white">FG</text>
+                <!-- Odoo FGD Badge -->
+                <rect x="780" y="790" width="60" height="25" class="odoo-badge"/>
+                <text x="810" y="803" class="odoo-text" font-size="10">FGD</text>
+                <text x="810" y="815" class="odoo-text" font-size="8">Seq: FGD</text>
+                
+                <!-- Residue Path -->
+                <line x1="950" y1="520" x2="880" y2="620" class="arrow" id="arrow-residue3"/>
+                <rect x="740" y="600" width="140" height="50" fill="#fff" stroke="#ff0000" stroke-width="4" rx="8" class="process-box-red"/>
+                <text x="810" y="625" text-anchor="middle" font-size="16" font-weight="bold" fill="#ff0000">Residue</text>
+                <line x1="740" y1="650" x2="740" y2="700" class="arrow" id="arrow-residue4"/>
+                <rect x="710" y="700" width="140" height="60" fill="#fff" stroke="#ff0000" stroke-width="4" rx="8" class="process-box-red"/>
+                <text x="780" y="730" text-anchor="middle" font-size="14" font-weight="bold" fill="#ff0000">Weigh the Material</text>
+                <text x="780" y="750" text-anchor="middle" font-size="14" font-weight="bold" fill="#ff0000">and dispose to Landfill</text>
+            </g>
+        </svg>
+        
+        <!-- PAGE 4: REPORTING & PAYMENT -->
+        <div class="page-title" style="margin-top: 60px;">💰 Process Map - Reporting &amp; Payment</div>
+        <div class="odoo-section-header">🔄 This section maps to Odoo: Reporting &amp; Invoice Management (Integrated with MCR, BSP, FGD) | Product Category: Recyclable Materials</div>
+        
+        <svg width="1400" height="1000" viewBox="0 0 1400 1000" id="svg3" style="margin-top: 20px;">
+            <defs>
+                <marker id="arrowhead3" markerWidth="12" markerHeight="12" refX="10" refY="4" orient="auto">
+                    <polygon points="0 0, 12 4, 0 8" fill="#0066cc" />
+                </marker>
+            </defs>
+            
+            <!-- Reporting Management Label -->
+            <rect x="30" y="30" width="50" height="940" fill="#20b2aa" stroke="#34495e" stroke-width="3" rx="5"/>
+            <text x="55" y="500" text-anchor="middle" font-size="18" font-weight="bold" fill="white" transform="rotate(-90 55 500)">Reporting Management</text>
+            
+            <!-- Page Reference -->
+            <circle cx="120" cy="120" r="30" class="circle-ref"/>
+            <text x="120" y="128" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Pg 2,3</text>
+            
+            <!-- GCI -->
+            <line x1="120" y1="120" x2="230" y2="120" class="arrow" id="arrow-report1"/>
+            <rect x="230" y="80" width="330" height="90" fill="#fff" stroke="#34495e" stroke-width="3" rx="8" class="process-box"/>
+            <text x="395" y="105" text-anchor="middle" font-size="20" font-weight="bold" fill="#2c3e50">GCI</text>
+            <text x="250" y="135" text-anchor="start" font-size="14" fill="#34495e">A detailed reports shall be shared and submitted</text>
+            <text x="250" y="155" text-anchor="start" font-size="14" fill="#34495e">on monthly basis, indicating:</text>
+            <text x="270" y="175" text-anchor="start" font-size="13" fill="#34495e">• Tons collected and processed per type of material</text>
+            <text x="270" y="195" text-anchor="start" font-size="13" fill="#34495e">• Tons sold per type of material</text>
+            <text x="270" y="215" text-anchor="start" font-size="13" fill="#34495e">• Sales value and payment due</text>
+            <text x="270" y="235" text-anchor="start" font-size="13" fill="#34495e">• Collected Material quantity and rate per material per source</text>
+            
+            <!-- Reports Document -->
+            <line x1="560" y1="125" x2="630" y2="125" class="arrow" id="arrow-report2"/>
+            <path d="M 630 100 L 670 90 L 670 150 L 630 160 Z" class="document-shape"/>
+            <text x="650" y="125" text-anchor="middle" font-size="16" font-weight="bold" fill="#2c3e50">Reports</text>
+            
+            <!-- GCI Operations and Finance Team -->
+            <line x1="670" y1="125" x2="750" y2="125" class="arrow" id="arrow-report3"/>
+            <rect x="750" y="80" width="440" height="90" fill="#fff" stroke="#34495e" stroke-width="3" rx="8" class="process-box"/>
+            <text x="970" y="105" text-anchor="middle" font-size="20" font-weight="bold" fill="#2c3e50">GCI Operations and Finance team</text>
+            <text x="770" y="135" text-anchor="start" font-size="16" fill="#34495e">Communicate the Monthly reports and invoices</text>
+            <text x="770" y="155" text-anchor="start" font-size="16" fill="#34495e">to the management</text>
+            
+            <!-- Invoices -->
+            <line x1="970" y1="170" x2="970" y2="240" class="arrow" id="arrow-inv1"/>
+            <path d="M 950 240 L 970 230 L 990 240 L 970 250 Z" class="document-shape"/>
+            <text x="970" y="240" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Baling</text>
+            <text x="970" y="255" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Invoice</text>
+            
+            <line x1="1070" y1="170" x2="1070" y2="240" class="arrow" id="arrow-inv2"/>
+            <path d="M 1050 240 L 1070 230 L 1090 240 L 1070 250 Z" class="document-shape"/>
+            <text x="1070" y="240" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Material</text>
+            <text x="1070" y="255" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Invoice</text>
+            
+            <!-- Management -->
+            <line x1="1190" y1="125" x2="1280" y2="125" class="arrow" id="arrow-mgmt"/>
+            <rect x="1280" y="80" width="110" height="90" fill="#fff" stroke="#34495e" stroke-width="3" rx="8" class="process-box"/>
+            <text x="1335" y="125" text-anchor="middle" font-size="18" font-weight="bold" fill="#2c3e50">MANAGEMENT</text>
+            
+            <!-- Finance -->
+            <line x1="970" y1="250" x2="970" y2="320" class="arrow" id="arrow-fin2"/>
+            <line x1="1070" y1="250" x2="1070" y2="320" class="arrow" id="arrow-fin3"/>
+            <rect x="850" y="320" width="240" height="70" fill="#fff" stroke="#34495e" stroke-width="3" rx="8" class="process-box"/>
+            <text x="970" y="355" text-anchor="middle" font-size="20" font-weight="bold" fill="#2c3e50">Finance</text>
+            
+            <!-- Operation Baling Payment -->
+            <line x1="850" y1="390" x2="500" y2="390" class="arrow" id="arrow-pay1"/>
+            <rect x="120" y="430" width="440" height="200" fill="#f0f0f0" stroke="#34495e" stroke-width="3" stroke-dasharray="8,4" rx="8"/>
+            <text x="340" y="460" text-anchor="middle" font-size="20" font-weight="bold" fill="#2c3e50">Operation Baling Payment</text>
+            <text x="150" y="490" text-anchor="start" font-size="16" fill="#34495e">Pay GCI operation / baling monthly bill</text>
+            <text x="150" y="520" text-anchor="start" font-size="16" fill="#34495e">amount of waste paper (Fiber) that is</text>
+            <text x="150" y="550" text-anchor="start" font-size="16" fill="#34495e">sourced, collected, processed.</text>
+            <text x="150" y="580" text-anchor="start" font-size="16" fill="#34495e">(please refer to SLA for the agreed</text>
+            <text x="150" y="610" text-anchor="start" font-size="16" fill="#34495e">charge per ton)</text>
+            
+            <!-- SLA Document -->
+            <path d="M 240 650 L 270 640 L 270 690 L 240 700 Z" class="document-shape"/>
+            <text x="255" y="665" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">SLA</text>
+            
+            <!-- Bank Transfer -->
+            <line x1="340" y1="630" x2="340" y2="680" class="arrow" id="arrow-bank1"/>
+            <path d="M 320 680 L 340 670 L 360 680 L 340 690 Z" class="document-shape"/>
+            <text x="340" y="680" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Bank</text>
+            <text x="340" y="695" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Transfer</text>
+            
+            <!-- Supply Chain Payment -->
+            <line x1="1090" y1="390" x2="850" y2="390" class="arrow" id="arrow-pay2"/>
+            <rect x="850" y="430" width="440" height="200" fill="#f0f0f0" stroke="#34495e" stroke-width="3" stroke-dasharray="8,4" rx="8"/>
+            <text x="1070" y="460" text-anchor="middle" font-size="20" font-weight="bold" fill="#2c3e50">Supply Chain Payment</text>
+            <text x="880" y="490" text-anchor="start" font-size="16" fill="#34495e">Pay to GCI total amount of</text>
+            <text x="880" y="520" text-anchor="start" font-size="16" fill="#34495e">collected material</text>
+            
+            <!-- Bank Transfer -->
+            <line x1="1070" y1="630" x2="1070" y2="680" class="arrow" id="arrow-bank2"/>
+            <path d="M 1050 680 L 1070 670 L 1090 680 L 1070 690 Z" class="document-shape"/>
+            <text x="1070" y="680" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Bank</text>
+            <text x="1070" y="695" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">Transfer</text>
+        </svg>
+    </div>
+    
+    <div class="tooltip" id="tooltip"></div>
+    
+    <script>
+        // Auto-start continuous looping animation
+        function startContinuousAnimation() {
+            const arrows = document.querySelectorAll('.arrow');
+            let currentIndex = 0;
+            const totalArrows = arrows.length;
+            const delayBetweenArrows = 250; // milliseconds between each arrow
+            const delayBeforeRestart = 2000; // 2 seconds pause before restarting loop
+            
+            function animateNextArrow() {
+                // Reset all arrows first
+                arrows.forEach(arrow => {
+                    arrow.classList.remove('arrow-animated');
+                    arrow.style.stroke = '#0066cc';
+                    arrow.style.strokeWidth = '3';
+                });
+                
+                // Animate arrows one by one
+                function animateSequence() {
+                    if (currentIndex < totalArrows) {
+                        arrows[currentIndex].classList.add('arrow-animated');
+                        arrows[currentIndex].style.stroke = '#27ae60';
+                        arrows[currentIndex].style.strokeWidth = '4';
+                        currentIndex++;
+                        setTimeout(animateSequence, delayBetweenArrows);
+                    } else {
+                        // All arrows animated, wait then restart
+                        setTimeout(() => {
+                            currentIndex = 0;
+                            animateSequence();
+                        }, delayBeforeRestart);
+                    }
+                }
+                
+                animateSequence();
+            }
+            
+            // Start the animation
+            animateNextArrow();
+        }
+        
+        // Start animation when page loads
+        window.addEventListener('DOMContentLoaded', function() {
+            // Small delay to ensure SVG is rendered
+            setTimeout(startContinuousAnimation, 500);
+        });
+        
+        // Add hover effects
+        document.querySelectorAll('.process-box, .finished-good, .document-shape').forEach(element => {
+            element.addEventListener('mouseenter', function(e) {
+                const tooltip = document.getElementById('tooltip');
+                tooltip.textContent = e.target.textContent || e.target.getAttribute('data-tooltip') || '';
+                tooltip.classList.add('show');
+            });
+            
+            element.addEventListener('mousemove', function(e) {
+                const tooltip = document.getElementById('tooltip');
+                tooltip.style.left = (e.pageX + 10) + 'px';
+                tooltip.style.top = (e.pageY + 10) + 'px';
+            });
+            
+            element.addEventListener('mouseleave', function() {
+                const tooltip = document.getElementById('tooltip');
+                tooltip.classList.remove('show');
+            });
+        });
+    </script>
+</body>
+</html>
