@@ -14,14 +14,39 @@ This repository contains an interactive visual diagram of the GCI (Green Circle 
 
 ## ?? Quick Start
 
+### Local Viewing
 1. **Open the HTML file** in any modern web browser:
    ```
-   GCI_Process_Map_Visual_Diagram.html
+   index.html
    ```
 
 2. **View the diagram** - The animation starts automatically and loops continuously
 
 3. **Compare with PPTX** - Use the diagram alongside `GCI_Process Map.pptx` to understand the complete workflow
+
+### Deploy to Vercel
+
+#### Option 1: Deploy via Vercel Dashboard (Recommended)
+1. Go to [vercel.com](https://vercel.com) and sign in with GitHub
+2. Click **"Add New Project"**
+3. Import your GitHub repository: `mohammed16ibraheem/GCI-Process-Map`
+4. Vercel will auto-detect the settings (no build command needed for static HTML)
+5. Click **"Deploy"**
+6. Your site will be live at `https://gci-process-map.vercel.app` (or your custom domain)
+
+#### Option 2: Deploy via Vercel CLI
+```bash
+# Install Vercel CLI
+npm i -g vercel
+
+# Navigate to project directory
+cd web
+
+# Deploy
+vercel
+
+# Follow the prompts to link your project
+```
 
 ## ?? Process Flow
 
@@ -63,7 +88,9 @@ The workflow is implemented in **Odoo ERP** with three Operation Types:
 
 ## ?? Files
 
-- `GCI_Process_Map_Visual_Diagram.html` - Main interactive diagram file
+- `index.html` - Main interactive diagram file (serves as homepage)
+- `GCI_Process_Map_Visual_Diagram.html` - Original diagram file
+- `vercel.json` - Vercel deployment configuration
 - `README.md` - This file
 
 ## ?? Visual Elements
